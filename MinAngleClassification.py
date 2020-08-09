@@ -17,17 +17,18 @@ data = []
 # Load in the Training data
 for dir in glob.glob('fruits-360/Training/*'):
     # Choose random image from each directory
-    name = random.choice(glob.glob(dir + "/*.jpg"))
-    img = cv2.imread(name)
-    # Invert the colors from BGR -> RGB
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    # Resize so there is enough memory
-    img = cv2.resize(img, (50, 50))
-    data.append(img)
-    # Split the path string so it can be used in the
-    name = name.lstrip("fruits-360/Training\ ")
-    name = name.split("\\")[0]
-    classification.append(name)
+    paths = random.sample(glob.glob(dir + "/*.jpg"), 2)
+    for name in paths:
+        img = cv2.imread(name)
+        # Invert the colors from BGR -> RGB
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # Resize so there is enough memory
+        img = cv2.resize(img, (50, 50))
+        data.append(img)
+        # Split the path string so it can be used in the
+        name = name.lstrip("fruits-360/Training\ ")
+        name = name.split("\\")[0]
+        classification.append(name)
 data = np.array(data)
 
 # Load in the test data
@@ -121,4 +122,3 @@ model.fit(X_train, classification, validation_data = (X_test, test_classificatio
 score = model.evaluate(X_test, test_classification, verbose = 0)
 print("Test loss: ", score[0])
 print("Test Accuracy: ", score[1])
-
