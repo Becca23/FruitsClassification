@@ -16,11 +16,10 @@ from keras.utils import to_categorical
 classification = []
 data = []
 # Load in the Training data
-#for dir in glob.glob('fruits-360/Training/*'):
-for name in glob.glob('fruits-360/Training/*/*.jpg'):
+for dir in glob.glob('fruits-360/Training/*'):
     # Choose random image from each directory
-    # random.seed(1)
-    # name = random.choice(glob.glob(dir + "/*.jpg"))
+    random.seed(1)
+    name = random.choice(glob.glob(dir + "/*.jpg"))
     img = cv2.imread(name)
     # Invert the colors from BGR -> RGB
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
