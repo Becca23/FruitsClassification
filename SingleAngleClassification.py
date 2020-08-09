@@ -2,21 +2,25 @@ import glob
 import cv2
 import matplotlib.pyplot as plt
 import random
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import accuracy_score
 import numpy as np
 from sklearn import svm
+from keras.models import Sequential
+from keras.layers import Dense, Conv2D, Flatten, AveragePooling2D
+from keras.utils import to_categorical
 
 classification = []
 data = []
 # Load in the Training data
-for dir in glob.glob('fruits-360/Training/*'):
+#for dir in glob.glob('fruits-360/Training/*'):
+for name in glob.glob('fruits-360/Training/*/*.jpg'):
     # Choose random image from each directory
-    name = random.choice(glob.glob(dir+"/*.jpg"))
+    # random.seed(1)
+    # name = random.choice(glob.glob(dir + "/*.jpg"))
     img = cv2.imread(name)
     # Invert the colors from BGR -> RGB
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -52,7 +56,8 @@ images_scaled = scaler.fit_transform([i.flatten() for i in data])
 test_images_scaled = scaler.fit_transform([i.flatten() for i in test_data])
 # Encode every class as a number so we can incorporate class labels into plot later
 le = LabelEncoder()
-y = le.fit_transform(classification)
+y_train = le.fit_transform(classification)
+y_test = le.fit_transform(test_classification)
 
 # Perform Linear Discriminant Analysis on the training data
 #lda = LinearDiscriminantAnalysis()
@@ -71,6 +76,7 @@ y = le.fit_transform(classification)
 # Due to the fact we are only using one angle per class we will not be splitting the train data into a train/test
 # split as it would not contain all the classes and would therefore be inaccurate
 # Train random forest classifier
+
 forest = RandomForestClassifier(n_estimators=10)
 forest = forest.fit(images_scaled, classification)
 
@@ -84,9 +90,38 @@ svm_clf = svm.SVC()
 svm_clf = svm_clf.fit(images_scaled, classification)
 
 # Test how well svm model generalizes to unseen data
-test_predictions = svm_clf.predict(test_images_scaled)
-precision = accuracy_score(test_predictions, test_classification) * 100
+predictions = svm_clf.predict(test_images_scaled)
+precision = accuracy_score(predictions, test_classification) * 100
 print("Accuracy with SVM: {0:.2f}%".format(precision))
 
 # Convolution Neural Networks
-# Reshpae the test and train sets to something that can be used for CNN
+# because it is common to use CNN frameworks that are proven to work
+X_train = data.reshape(data.shape[0], 50, 50, 3)
+X_test = test_data.reshape(test_data.shape[0], 50, 50, 3)
+classification = to_categorical(y_train)
+test_classification = to_categorical(y_test)
+
+input_shape = (50,50,3)
+
+model = Sequential()
+
+model.add(Conv2D(64, kernel_size=3, activation='relu', input_shape=input_shape))
+
+model.add(AveragePooling2D())
+
+model.add(Conv2D(32, kernel_size=3,  activation='relu'))
+
+model.add(AveragePooling2D())
+
+model.add(Flatten())
+
+model.add(Dense(27, activation='softmax'))
+
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+model.fit(X_train, classification, validation_data = (X_test, test_classification), epochs = 3)
+
+score = model.evaluate(X_test, test_classification, verbose = 0)
+print("Test loss: ", score[0])
+print("Test Accuracy: ", score[1])
+
