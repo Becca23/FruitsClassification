@@ -9,6 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import accuracy_score
 import numpy as np
+from sklearn import svm
 
 classification = []
 data = []
@@ -78,4 +79,14 @@ test_predictions = forest.predict(test_images_scaled)
 precision = accuracy_score(test_predictions, test_classification) * 100
 print("Test Accuracy with Random Forest: {0:.2f}%".format(precision))
 
+# Train SVM model
+svm_clf = svm.SVC()
+svm_clf = svm_clf.fit(images_scaled, classification)
 
+# Test how well svm model generalizes to unseen data
+test_predictions = svm_clf.predict(test_images_scaled)
+precision = accuracy_score(test_predictions, test_classification) * 100
+print("Accuracy with SVM: {0:.2f}%".format(precision))
+
+# Convolution Neural Networks
+# Reshpae the test and train sets to something that can be used for CNN
