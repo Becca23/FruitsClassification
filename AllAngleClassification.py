@@ -65,6 +65,15 @@ scaler = StandardScaler()
 # In[9]
 images_scaled = scaler.fit_transform([i.flatten() for i in fruit_images])
 
+# In[10]
+
+pca = PCA().fit(images_scaled)
+pca_test = PCA(n_components=100)
+plt.plot(np.cumsum(pca_test.explained_variance_ratio_))
+plt.xlabel('number of components')
+plt.ylabel('cumulative explained variance')
+plt.title('Scree Plot')
+plt.show()
 
 # In[10]
 
